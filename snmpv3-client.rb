@@ -239,52 +239,52 @@ end
 
 
 def parse_reply(pkt)
-               return if not pkt[1]
+  return if not pkt[1]
 
-               asn1 = OpenSSL::ASN1.decode(pkt) rescue nil
-               if(! asn1)
-                               puts "Not ASN encoded data"
-                               return
-               end
+  asn1 = OpenSSL::ASN1.decode(pkt) rescue nil
+  if(! asn1)
+               puts "Not ASN encoded data"
+               return
+  end
 
-               msgVersion = asn1.value[0]
-               msgGlobalData = asn1.value[1]
+  msgVersion = asn1.value[0]
+  msgGlobalData = asn1.value[1]
 
-               # The usmSecurityParameter is an Octet String whose value is a BER encoded ASN1data class, so it must be unpacked
-               msgSecurityParameter = OpenSSL::ASN1.decode(asn1.value[2].value)
-               msgAuthoritiveEngineID = msgSecurityParameter.value[0].value
-               msgAuthoritiveEngineBoots = msgSecurityParameter.value[1].value.to_i
-               msgAuthoritiveEngineTime = msgSecurityParameter.value[2].value.to_i
-               puts "msgAuthoritiveEngineTime: #{msgAuthoritiveEngineTime}"
+  # The usmSecurityParameter is an Octet String whose value is a BER encoded ASN1data class, so it must be unpacked
+  msgSecurityParameter = OpenSSL::ASN1.decode(asn1.value[2].value)
+  msgAuthoritiveEngineID = msgSecurityParameter.value[0].value
+  msgAuthoritiveEngineBoots = msgSecurityParameter.value[1].value.to_i
+  msgAuthoritiveEngineTime = msgSecurityParameter.value[2].value.to_i
+  puts "msgAuthoritiveEngineTime: #{msgAuthoritiveEngineTime}"
 
-               msgData = asn1.value[3]
-               contextEngineID = msgData.value[0]
-               contextName = msgData.value[1]
+  msgData = asn1.value[3]
+  contextEngineID = msgData.value[0]
+  contextName = msgData.value[1]
 
-               pdu = msgData.value[2]
-               requestId = pdu.value[0]
-               errorStatus = pdu.value[1]
-               errorIndex = pdu.value[2]
-               varBind = pdu.value[3]
+  pdu = msgData.value[2]
+  requestId = pdu.value[0]
+  errorStatus = pdu.value[1]
+  errorIndex = pdu.value[2]
+  varBind = pdu.value[3]
 
-               if varBind
-                       var = varBind.value[0]
-                       if var
-                               oid = var.value[0]
-                               val = var.value[1]
-                       end
-               end
+  if varBind
+       var = varBind.value[0]
+       if var
+               oid = var.value[0]
+               val = var.value[1]
+       end
+  end
 
-               snmpResult = {  "msgAuthEngineID"               => msgAuthoritiveEngineID,
-                                               "msgAuthEngineBoots"    => msgAuthoritiveEngineBoots,
-                                               "msgAuthEngineTime"             => msgAuthoritiveEngineTime,
-                                               "contextEngineID"          => contextEngineID,
-                                               "errorStatus"              => errorStatus,
-                                               "oid"                              => oid,
-                                               "val"                              => val,
-                               }
+  snmpResult = {  :msgAuthEngineID                => msgAuthoritiveEngineID,
+                  :msgAuthEngineBoots             => msgAuthoritiveEngineBoots,
+                  :msgAuthEngineTime              => msgAuthoritiveEngineTime,
+                  :contextEngineID                => contextEngineID,
+                  :errorStatus                    => errorStatus,
+                  :oid                            => oid,
+                  :val                            => val,
+               }
 
-               snmpResult
+  snmpResult
 end
 
 rhost = ARGV[1]
@@ -310,7 +310,7 @@ data =
                "authPrivUser",                                                                                                                                                                         # user Name
                "password", "MD5",                                                                                                                                                                      # authPass, authProto
                "password", "DES",                                                                                                                                                      # privPass, privProto
-               snmpReturn["msgAuthEngineID"], snmpReturn["msgAuthEngineBoots"], snmpReturn["msgAuthEngineTime"]        #
+               snmpReturn[:msgAuthEngineID], snmpReturn[:msgAuthEngineBoots], snmpReturn[:msgAuthEngineTime]        #
        )
 
 udp_socket.send(data, 0, rhost, 161)
